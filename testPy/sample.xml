@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<order>
+    <orderId>12345</orderId>
+    <customer>
+        <name>John Doe</name>
+        <email>johndoe@example.com</email>
+        <address>
+            <street>123 Main St</street>
+            <city>Anytown</city>
+            <state>CA</state>
+            <zip>12345</zip>
+        </address>
+    </customer>
+    <items>
+        <item>
+            <productId>987</productId>
+            <quantity>2</quantity>
+            <price>19.99</price>
+        </item>
+        <item>
+            <productId>654</productId>
+            <quantity>1</quantity>
+            <price>29.99</price>
+        </item>
+    </items>
+    <totalAmount>69.97</totalAmount>
+    <orderDate>2023-10-01</orderDate>
+</order>
