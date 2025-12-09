@@ -1,0 +1,16 @@
+audio_id3:
+  album: Sample Album
+  artist: Sample Artist
+  title: Sample Song
+  year: 2025
+database:
+  host: localhost
+  password: password123
+  port: 5432
+  user: admin
+video_id3:
+  codec: H.264
+  director: Sample Director
+  resolution: 1920x1080
+  title: Sample Video
+  year: 2024
