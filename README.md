@@ -51,4 +51,18 @@ git config --global user.name "My GitHub Name"
 
 **--------------------------------------------set user.email & user.name -----end ----**
 
+## Rebase 操作示例
+### 1. 查看当前分支状态（可选）
+git status
 
+### 2. 拉取远程代码并变基
+git pull --rebase origin main
+
+### 3. 若出现冲突，修改冲突文件后执行：
+git add .  # 标记所有冲突已解决
+git rebase --continue  # 继续变基
+
+### 4. 变基完成后，推送本地代码（如果需要）
+git push origin main
+
+**--------------------------------------Rebase 示例----**
