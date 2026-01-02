@@ -1,98 +1,94 @@
-from typing import Any, Optional
-import json
 import argparse
+import json
+import re
 import sys
-from xml.sax.saxutils import escape as _escape
+from xml.etree.ElementTree import Element, tostring
+from xml.dom import minidom
 
 #!/usr/bin/env python3
 """
 JSON2XML.py
 
-Utility to convert a Python JSON-like object to XML.
+Convert a JSON file to XML and save to an output file.
 
-Provides:
-- json_to_xml(obj, root_name='root', indent=None) -> str
+Usage:
+        python JSON2XML.py input.json output.xml [--root ROOTNAME]
 
-Usage (CLI):
-    python JSON2XML.py input.json -o output.xml --root data --indent 2
-If no input file is provided, reads JSON from stdin.
+If --root is omitted the root element name is derived from the input filename
+(or defaults to "root" if input is "-" for stdin).
 """
 
+def _safe_tag(name):
+                # Replace invalid chars and ensure tag doesn't start with digit
+                if not isinstance(name, str) or name == "":
+                                return "item"
+                tag = re.sub(r"[^a-zA-Z0-9_:.-]", "_", name)
+                if re.match(r"^[0-9]", tag):
+                                tag = "n_" + tag
+                return tag
 
-
-def json_to_xml(obj: Any, root_name: str = "root", indent: Optional[int] = None) -> str:
-        """
-        Convert a JSON-like Python object to an XML string.
-
-        Parameters:
-        - obj: dict/list/primitive representing JSON.
-        - root_name: name of the outermost XML element.
-        - indent: number of spaces for pretty printing. If None, output is compact.
-
-        Behavior:
-        - dict keys become child element names.
-        - list values produce repeated child elements with the same key name.
-        - None is rendered as an empty element (<tag/>).
-        - Strings are XML-escaped.
-        """
-        def to_compact(value: Any, tag: str) -> str:
-                if isinstance(value, dict):
-                        inner = "".join(to_compact(v, k) for k, v in value.items())
-                        return f"<{tag}>{inner}</{tag}>"
-                if isinstance(value, list):
-                        return "".join(to_compact(item, tag) for item in value)
+def _build_xml(elem, value):
+                # Recursively build XML under elem from Python data types
                 if value is None:
-                        return f"<{tag}/>"
-                return f"<{tag}>{_escape(str(value))}</{tag}>"
-
-        lines = []
-
-        def append_pretty(value: Any, tag: str, level: int) -> None:
-                pad = " " * (indent * level)
+                                return
                 if isinstance(value, dict):
-                        lines.append(f"{pad}<{tag}>")
-                        for k, v in value.items():
-                                append_pretty(v, k, level + 1)
-                        lines.append(f"{pad}</{tag}>")
-                        return
-                if isinstance(value, list):
-                        for item in value:
-                                append_pretty(item, tag, level)
-                        return
-                if value is None:
-                        lines.append(f"{pad}<{tag}/>")
-                        return
-                lines.append(f"{pad}<{tag}>{_escape(str(value))}</{tag}>")
+                                for k, v in value.items():
+                                                child = Element(_safe_tag(k))
+                                                elem.append(child)
+                                                _build_xml(child, v)
+                elif isinstance(value, list):
+                                # For lists, create repeated child elements named "item" unless caller supplies a wrapper key
+                                for item in value:
+                                                child = Element("item")
+                                                elem.append(child)
+                                                _build_xml(child, item)
+                else:
+                                # primitive value
+                                elem.text = str(value)
 
-        if indent is None:
-                return to_compact(obj, root_name)
-        append_pretty(obj, root_name, 0)
-        return "\n".join(lines)
+def json_to_xml_obj(root_name, obj):
+                root = Element(_safe_tag(root_name))
+                _build_xml(root, obj)
+                return root
 
+def pretty_xml_string(element):
+                raw = tostring(element, "utf-8")
+                parsed = minidom.parseString(raw)
+                return parsed.toprettyxml(indent="  ")
 
-def _main():
-        parser = argparse.ArgumentParser(description="Convert JSON to XML")
-        parser.add_argument("input", nargs="?", help="Input JSON file (default: stdin)")
-        parser.add_argument("-o", "--output", help="Output XML file (default: stdout)")
-        parser.add_argument("--root", default="root", help="Root element name (default: root)")
-        parser.add_argument("--indent", type=int, default=None,
-                                                help="Number of spaces for indentation (default: compact)")
-        args = parser.parse_args()
+def main():
+                parser = argparse.ArgumentParser(description="Convert JSON to XML")
+                parser.add_argument("input", "input.json")
+                parser.add_argument("output", "output.xml")
+                parser.add_argument("root", "Root")
+                args = parser.parse_args()
 
-        if args.input:
-                with open(args.input, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-        else:
-                data = json.load(sys.stdin)
+                # Read JSON
+                try:
+                                if args.input == "-":
+                                                data = json.load(sys.stdin)
+                                                inferred_root = "root"
+                                else:
+                                                with open(args.input, "r", encoding="utf-8") as f:
+                                                                data = json.load(f)
+                                                inferred_root = re.sub(r"\.json$", "", args.input.split("/")[-1], flags=re.IGNORECASE) or "root"
+                except Exception as e:
+                                print(f"Error reading JSON: {e}", file=sys.stderr)
+                                sys.exit(2)
 
-        xml = json_to_xml(data, root_name=args.root, indent=args.indent)
+                root_name = args.root if args.root else inferred_root
+                xml_root = json_to_xml_obj(root_name, data)
+                xml_text = pretty_xml_string(xml_root)
 
-        if args.output:
-                with open(args.output, "w", encoding="utf-8") as f:
-                        f.write(xml)
-        else:
-                sys.stdout.write(xml)
-
+                try:
+                                if args.output == "-":
+                                                sys.stdout.write(xml_text)
+                                else:
+                                                with open(args.output, "w", encoding="utf-8") as f:
+                                                                f.write(xml_text)
+                except Exception as e:
+                                print(f"Error writing XML: {e}", file=sys.stderr)
+                                sys.exit(3)
 
 if __name__ == "__main__":
-        _main()
+                main()

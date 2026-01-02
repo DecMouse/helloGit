@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "age": 20,
+    "grade": 88.5,
+    "subjects": [
+      "Math",
+      "Physics"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "age": 22,
+    "grade": 91.0,
+    "subjects": [
+      "History",
+      "English"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Cara Lee",
+    "age": 19,
+    "grade": 79.0,
+    "subjects": [
+      "Biology",
+      "Chemistry"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "David Kim",
+    "age": 21,
+    "grade": 91.0,
+    "subjects": [
+      "Math",
+      "Computer Science"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Eva Green",
+    "age": 20,
+    "grade": 85.0,
+    "subjects": [
+      "Art",
+      "Design"
+    ]
+  }
+]
