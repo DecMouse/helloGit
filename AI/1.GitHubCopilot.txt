@@ -1,6 +1,9 @@
+https://docs.github.com/en/copilot/get-started/what-is-github-copilot
+
 what is "GitHub Copilot"? 
 
 -An AI pair-programmer that suggests code, whole lines, and functions inside editors (VS Code, Visual Studio, JetBrains, Codespaces).
 -Generates context-aware completions, examples, tests, and documentation using large language models trained on public code.
 -Integrates via an extension and usually requires a subscription (free tiers/trials for some users).
 -Not perfect—always review suggestions for correctness, security, and licensing.
+
